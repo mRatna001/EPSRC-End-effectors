@@ -1,0 +1,57 @@
+from base import BaseVacuumGripper
+
+# Write registers (send commands)
+REG_CHANNEL_A_WRITE = 0
+REG_CHANNEL_B_WRITE = 1
+
+# Read registers (check actual vacuum)
+REG_CHANNEL_A_READ  = 258
+REG_CHANNEL_B_READ  = 259
+
+# Control modes
+MODE_RELEASE = 0
+MODE_GRIP    = 1
+MODE_IDLE    = 2
+
+# Limits
+MAX_VACUUM = 80
+
+UNIT_ID = 65
+
+
+class VG10(BaseVacuumGripper):
+
+    def __init__(self, ip: str, port: int = 502):
+        super().__init__(ip, port)
+
+    def get_status(self) -> dict:
+        raw_a = self._read_register(REG_CHANNEL_A_READ)
+        raw_b = self._read_register(REG_CHANNEL_B_READ)
+        return {
+            'channel_a_vacuum': raw_a / 1000.0,
+            'channel_b_vacuum': raw_b / 1000.0,
+        }
+
+    def grip(self, vacuum_percent: int, channel: str = 'both'):
+        vacuum_percent = max(0, min(MAX_VACUUM, vacuum_percent))
+        value = (MODE_GRIP << 8) | vacuum_percent
+        if channel in ('A', 'both'):
+            self._write_register(REG_CHANNEL_A_WRITE, value)
+        if channel in ('B', 'both'):
+            self._write_register(REG_CHANNEL_B_WRITE, value)
+
+    def release(self, channel: str = 'both'):
+        if channel in ('A', 'both'):
+            self._write_register(REG_CHANNEL_A_WRITE, MODE_RELEASE)
+        if channel in ('B', 'both'):
+            self._write_register(REG_CHANNEL_B_WRITE, MODE_RELEASE)
+
+    def idle(self, channel: str = 'both'):
+        value = (MODE_IDLE << 8)
+        if channel in ('A', 'both'):
+            self._write_register(REG_CHANNEL_A_WRITE, value)
+        if channel in ('B', 'both'):
+            self._write_register(REG_CHANNEL_B_WRITE, value)
+
+    def stop(self):
+        self.release()
