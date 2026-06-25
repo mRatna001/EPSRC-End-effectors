@@ -1,10 +1,7 @@
-
-name: rg2
+name: 3fg15
 type: fingered
-driver: rg2_rg6.RG
-gripper_arg: rg2
-max_width_mm: 110
-max_force_n: 40
+driver: fg15.FG15
+max_force_percent: 100
 unit_id: 65
 ip: 192.168.1.1
 port: 502
@@ -12,7 +9,8 @@ commands:
   - open_gripper
   - close_gripper
   - move_gripper
+  - flexible_grip
   - stop
   - get_status
-  - get_width
-  - get_width_with_offset
+  - get_diameter
+  - get_diameter_with_offset

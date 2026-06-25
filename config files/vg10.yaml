@@ -1,0 +1,16 @@
+name: vg10
+type: vacuum
+driver: vg10.VG10
+max_vacuum_percent: 80
+channels:
+  - A
+  - B
+unit_id: 65
+ip: 192.168.1.1
+port: 502
+commands:
+  - grip
+  - release
+  - idle
+  - stop
+  - get_status

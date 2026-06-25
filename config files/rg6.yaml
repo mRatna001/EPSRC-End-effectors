@@ -1,10 +1,9 @@
-
-name: rg2
+name: rg6
 type: fingered
 driver: rg2_rg6.RG
-gripper_arg: rg2
-max_width_mm: 110
-max_force_n: 40
+gripper_arg: rg6
+max_width_mm: 160
+max_force_n: 120
 unit_id: 65
 ip: 192.168.1.1
 port: 502

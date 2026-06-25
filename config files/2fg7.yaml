@@ -1,10 +1,9 @@
-
-name: rg2
+name: 2fg7
 type: fingered
-driver: rg2_rg6.RG
-gripper_arg: rg2
-max_width_mm: 110
+driver: fg7.FG7
 max_force_n: 40
+max_speed_percent: 100
+min_speed_percent: 10
 unit_id: 65
 ip: 192.168.1.1
 port: 502
@@ -14,5 +13,5 @@ commands:
   - move_gripper
   - stop
   - get_status
-  - get_width
-  - get_width_with_offset
+  - get_external_width
+  - get_internal_width
