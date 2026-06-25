@@ -1,22 +1,20 @@
-from pymodbus.client import ModbusTcpClient
-import BaseGripper
+
+from base import BaseFingeredGripper
 
 UNIT_ID = 65
 
 
-class RG36Gripper(BaseFingeredGripper):
-    def __init__ (self, gripper: str, ip: str, port: int = 502):
-        self.ip = ip
-        self.port = port
-        self.gripper = gripper
-        self.modbus = ModbusTcpClient(host=ip, port=port, timeout=1)
-        self.open_connection()
-        if gripper == "rg2":
-            self.max_width = 1100
-            self.max_force =400
-        elif gripper == "rg6":
-            self.max_width = 1600
-            self.max_force =1200
+class RG(BaseFingeredGripper):
+    def __init__(self, gripper: str, ip: str, port: int = 502):
+    self.gripper = gripper
+    if gripper == 'rg2':
+        self.max_width = 1100
+        self.max_force = 400
+    elif gripper == 'rg6':
+        self.max_width = 1600
+        self.max_force = 1200
+    super().__init__(ip, port)
+    
 
 
 

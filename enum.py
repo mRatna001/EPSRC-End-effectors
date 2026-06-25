@@ -3,8 +3,8 @@ from enum import Enum
 class GripperType(Enum):
     RG2         = 'rg2'
     RG6         = 'rg6'
-    TWO_FG7     = '2fg7'
-    THREE_FG15  = '3fg15'
+    TWOFG7     = '2fg7'
+    THREEFG15  = '3fg15'
     VG10        = 'vg10'
     VGC10       = 'vgc10'
     GECKO       = 'gecko'

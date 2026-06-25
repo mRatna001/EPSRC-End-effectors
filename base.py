@@ -1,14 +1,49 @@
 from abc import ABC, abstractmethod
+from pymodbus.client import ModbusTcpClient
+
+UNIT_ID = 65
 
 
 class BaseGripper(ABC):
-    @abstractmethod
-    def open_connection(self):
-        pass
 
-    @abstractmethod
+    def __init__(self, ip: str, port: int = 502):
+        self.ip = ip
+        self.port = port
+        self.modbus = ModbusTcpClient(host=ip, port=port, timeout=1)
+        self.open_connection()
+
+    def open_connection(self):
+        """Opens Modbus TCP connection to gripper."""
+        self.modbus.connect()
+
     def close_connection(self):
-        pass
+        """Closes Modbus TCP connection."""
+        self.modbus.close()
+
+    def _read_register(self, address: int) -> int:
+        """Reads one holding register, returns raw integer value."""
+        result = self.modbus.read_holding_registers(
+            address=address,
+            count=1,
+            slave=UNIT_ID
+        )
+        return result.registers[0]
+
+    def _write_register(self, address: int, value: int):
+        """Writes one value to one holding register."""
+        self.modbus.write_register(
+            address=address,
+            value=value,
+            slave=UNIT_ID
+        )
+
+    def _write_registers(self, address: int, values: list):
+        """Writes multiple consecutive registers in one request."""
+        self.modbus.write_registers(
+            address=address,
+            values=values,
+            slave=UNIT_ID
+        )
 
     @abstractmethod
     def get_status(self) -> dict:
@@ -17,42 +52,10 @@ class BaseGripper(ABC):
     @abstractmethod
     def stop(self):
         pass
-    def open_connection(self):
-        self.modbus.connect()
-
-    def close_connection(self):
-        self.modbus.close()
-
-    def _read_register(self, address: int) -> int:
-            """Reads one holding register, returns raw integer value."""
-            result = self.modbus.read_holding_registers(
-                address=address,
-                count=1,
-                slave=UNIT_ID
-            )
-            return result.registers[0]
-
-
-    
-
-    def _write_register(self, address: int, value: int):
-            """Writes one value to one holding register."""
-            self.modbus.write_register(
-                address=address,
-                value=value,
-                slave=UNIT_ID
-            )
-
-    def _write_registers(self, address: int, values: list):
-            """Writes multiple consecutive registers in one request."""
-            self.modbus.write_registers(
-                address=address,
-                values=values,
-                slave=UNIT_ID
-            )
 
 
 class BaseFingeredGripper(BaseGripper):
+
     @abstractmethod
     def open_gripper(self):
         pass
@@ -67,6 +70,7 @@ class BaseFingeredGripper(BaseGripper):
 
 
 class BaseVacuumGripper(BaseGripper):
+
     @abstractmethod
     def grip(self, vacuum_percent: int):
         pass

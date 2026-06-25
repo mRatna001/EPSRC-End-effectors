@@ -1,103 +1,56 @@
-"""
-OnRobot 3FG15 Modbus TCP driver.
-Register map from OnRobot Modbus documentation section 3.1.5.3
-"""
 
-from pymodbus.client import ModbusTcpClient
-import BaseGripper
 
-# ─── Register map ────────────────────────────────────────────────────────────
 
-# Write registers
-REG_TARGET_FORCE    = 0     # 0x0000 -- target force in % (0-1000)
-REG_TARGET_DIAMETER = 1     # 0x0001 -- target diameter in 1/10 mm
-REG_GRIP_TYPE       = 2     # 0x0002 -- 0=external, 1=internal
-REG_CONTROL         = 3     # 0x0003 -- control command
+from base import BaseFingeredGripper
 
-# Read registers
-REG_STATUS          = 256   # 0x0100 -- status flags
-REG_RAW_DIAMETER    = 257   # 0x0101 -- raw diameter in 1/10 mm
-REG_DIAMETER_OFFSET = 258   # 0x0102 -- diameter with fingertip offset in 1/10 mm
-REG_FORCE_APPLIED   = 259   # 0x0103 -- force applied in 1/10 %
-REG_FINGER_LENGTH   = 270   # 0x010E -- finger length in 1/10 mm
-REG_FINGER_POSITION = 272   # 0x0110 -- finger position (1, 2 or 3)
-REG_FINGERTIP_OFFSET= 273   # 0x0111 -- fingertip offset in 1/100 mm
-REG_MIN_DIAMETER    = 513   # 0x0201 -- minimum reachable diameter
-REG_MAX_DIAMETER    = 514   # 0x0202 -- maximum reachable diameter
+
+REG_TARGET_FORCE    = 0     
+REG_TARGET_DIAMETER = 1     
+REG_GRIP_TYPE       = 2     
+REG_CONTROL         = 3     
+
+REG_STATUS          = 256   
+REG_RAW_DIAMETER    = 257   
+REG_DIAMETER_OFFSET = 258   
+REG_FORCE_APPLIED   = 259   
+REG_FINGER_LENGTH   = 270   
+REG_FINGER_POSITION = 272   
+REG_FINGERTIP_OFFSET= 273   
+REG_MIN_DIAMETER    = 513   
+REG_MAX_DIAMETER    = 514   
 
 # Read/Write registers
-REG_SET_FINGER_LENGTH   = 1025  # 0x0401 -- set finger length in 1/10 mm
-REG_SET_FINGER_POSITION = 1027  # 0x0403 -- set finger position (1, 2 or 3)
-REG_SET_FINGERTIP_OFFSET= 1028  # 0x0404 -- set fingertip offset in 1/100 mm
+REG_SET_FINGER_LENGTH   = 1025  
+REG_SET_FINGER_POSITION = 1027  
+REG_SET_FINGERTIP_OFFSET= 1028  
 
-# ─── Control commands ─────────────────────────────────────────────────────────
-CMD_GRIP            = 1     # 0x0001 -- start motion with target force and diameter
-CMD_MOVE            = 2     # 0x0002 -- move without applying force
-CMD_STOP            = 4     # 0x0004 -- stop current motion
-CMD_FLEXIBLE_GRIP   = 5     # 0x0005 -- flexible grip
 
-# ─── Grip types ───────────────────────────────────────────────────────────────
-GRIP_EXTERNAL       = 0     # diameter measured inside fingertips
-GRIP_INTERNAL       = 1     # diameter measured outside fingertips
+CMD_GRIP            = 1    
+CMD_MOVE            = 2     
+CMD_STOP            = 4     
+CMD_FLEXIBLE_GRIP   = 5     
 
-# ─── Physical limits ──────────────────────────────────────────────────────────
-MAX_FORCE_PERCENT   = 1000  # max force in % (maps to 140N at 100%)
+
+GRIP_EXTERNAL       = 0     
+GRIP_INTERNAL       = 1     
+
+
+MAX_FORCE_PERCENT   = 1000  
 MIN_FORCE_PERCENT   = 0
-MAX_DIAMETER_MM     = 150   # approximate -- real max read from REG_MAX_DIAMETER
-MIN_DIAMETER_MM     = 0     # approximate -- real min read from REG_MIN_DIAMETER
+MAX_DIAMETER_MM     = 150   
+MIN_DIAMETER_MM     = 0     
 
-# Modbus unit ID -- via Quick Changer = 65
+
 UNIT_ID             = 65
 
 
-class FG15(BaseFingeredGripper):
-    """Driver for OnRobot 3FG15 three-finger gripper over Modbus TCP."""
-
+class THREEFG15(BaseFingeredGripper):
     def __init__(self, ip: str, port: int = 502):
-        self.ip = ip
-        self.port = port
-        self.client = ModbusTcpClient(host=ip, port=port, timeout=1)
-        self.open_connection()
-        # Read real limits from gripper after connecting
-        self._min_diameter_mm = self._read_min_diameter()
-        self._max_diameter_mm = self._read_max_diameter()
+    super().__init__(ip, port)
+    self._min_diameter_mm = self._read_min_diameter()
+    self._max_diameter_mm = self._read_max_diameter()
+   
 
-    # ─── Connection ───────────────────────────────────────────────────────────
-
-    def open_connection(self):
-        """Opens Modbus TCP connection to gripper."""
-        self.client.connect()
-
-    def close_connection(self):
-        """Closes Modbus TCP connection."""
-        self.client.close()
-
-    # ─── Private helpers ──────────────────────────────────────────────────────
-
-    def _read_register(self, address: int) -> int:
-        """Reads one holding register, returns raw integer value."""
-        result = self.client.read_holding_registers(
-            address=address,
-            count=1,
-            slave=UNIT_ID
-        )
-        return result.registers[0]
-
-    def _write_register(self, address: int, value: int):
-        """Writes one value to one holding register."""
-        self.client.write_register(
-            address=address,
-            value=value,
-            slave=UNIT_ID
-        )
-
-    def _write_registers(self, address: int, values: list):
-        """Writes multiple consecutive registers in one request."""
-        self.client.write_registers(
-            address=address,
-            values=values,
-            slave=UNIT_ID
-        )
 
     def _read_min_diameter(self) -> float:
         """Reads minimum reachable diameter from gripper in mm."""
@@ -119,7 +72,7 @@ class FG15(BaseFingeredGripper):
     def _clamp_force(self, force_percent: float) -> float:
         return max(MIN_FORCE_PERCENT, min(MAX_FORCE_PERCENT, force_percent))
 
-    # ─── Read registers (sense) ───────────────────────────────────────────────
+    
 
     def get_diameter(self) -> float:
         """Current raw diameter in mm (center of fingertips)."""
