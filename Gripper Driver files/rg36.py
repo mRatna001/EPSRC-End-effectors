@@ -1,7 +1,7 @@
 
 from base import BaseFingeredGripper
 
-
+UNIT_ID = 65
 
 
 class RG(BaseFingeredGripper):
