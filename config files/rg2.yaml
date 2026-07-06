@@ -1,18 +1,28 @@
-
-name: rg2
-type: fingered
+id: rg2
+name: OnRobot RG2
 driver: rg2_rg6.RG
 gripper_arg: rg2
-max_width_mm: 110
-max_force_n: 40
-unit_id: 65
-ip: 192.168.1.1
-port: 502
-commands:
-  - open_gripper
-  - close_gripper
-  - move_gripper
-  - stop
-  - get_status
-  - get_width
-  - get_width_with_offset
+nodes:
+  gripper:
+    properties:
+      width:
+        datatype: float
+        unit: mm
+        settable: true
+        min: 0
+        max: 110
+      force:
+        datatype: float
+        unit: N
+        settable: true
+        min: 0
+        max: 40
+      busy:
+        datatype: bool
+        settable: false
+      grip_detected:
+        datatype: bool
+        settable: false
+      safety_error:
+        datatype: bool
+        settable: false

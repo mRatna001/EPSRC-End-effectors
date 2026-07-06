@@ -1,17 +1,33 @@
-name: 2fg7
-type: fingered
+id: 2fg7
+name: OnRobot 2FG7
 driver: fg7.FG7
-max_force_n: 40
-max_speed_percent: 100
-min_speed_percent: 10
-unit_id: 65
-ip: 192.168.1.1
-port: 502
-commands:
-  - open_gripper
-  - close_gripper
-  - move_gripper
-  - stop
-  - get_status
-  - get_external_width
-  - get_internal_width
+nodes:
+  gripper:
+    properties:
+      width:
+        datatype: float
+        unit: mm
+        settable: true
+        min: 0
+        max: 140
+      force:
+        datatype: float
+        unit: N
+        settable: true
+        min: 0
+        max: 40
+      speed:
+        datatype: int
+        unit: '%'
+        settable: true
+        min: 10
+        max: 100
+      busy:
+        datatype: bool
+        settable: false
+      grip_detected:
+        datatype: bool
+        settable: false
+      not_calibrated:
+        datatype: bool
+        settable: false

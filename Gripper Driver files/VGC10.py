@@ -1,7 +1,7 @@
 from base import BaseVacuumGripper
 
 # Write registers (send commands)
-REG_CHANNEL_A_WRITE = 0
+REG_CHANNEL_A_WRITE = 0  
 REG_CHANNEL_B_WRITE = 1
 
 # Read registers (check actual vacuum)

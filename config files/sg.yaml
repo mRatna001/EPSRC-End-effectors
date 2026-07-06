@@ -1,16 +1,24 @@
-name: vg10
-type: vacuum
-driver: vg10.VG10
-max_vacuum_percent: 80
-channels:
-  - A
-  - B
-unit_id: 65
-ip: 192.168.1.1
-port: 502
-commands:
-  - grip
-  - release
-  - idle
-  - stop
-  - get_status
+id: sg
+name: OnRobot SG
+driver: sg.SG
+nodes:
+  gripper:
+    properties:
+      width:
+        datatype: float
+        unit: mm
+        settable: true
+        min: 0
+        max: 110
+      gentle_grip:
+        datatype: bool
+        settable: true
+      busy:
+        datatype: bool
+        settable: false
+      initialized:
+        datatype: bool
+        settable: false
+      error:
+        datatype: bool
+        settable: false

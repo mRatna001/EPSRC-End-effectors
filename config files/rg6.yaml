@@ -1,17 +1,28 @@
-name: rg6
-type: fingered
+id: rg6
+name: OnRobot RG6
 driver: rg2_rg6.RG
 gripper_arg: rg6
-max_width_mm: 160
-max_force_n: 120
-unit_id: 65
-ip: 192.168.1.1
-port: 502
-commands:
-  - open_gripper
-  - close_gripper
-  - move_gripper
-  - stop
-  - get_status
-  - get_width
-  - get_width_with_offset
+nodes:
+  gripper:
+    properties:
+      width:
+        datatype: float
+        unit: mm
+        settable: true
+        min: 0
+        max: 160
+      force:
+        datatype: float
+        unit: N
+        settable: true
+        min: 0
+        max: 120
+      busy:
+        datatype: bool
+        settable: false
+      grip_detected:
+        datatype: bool
+        settable: false
+      safety_error:
+        datatype: bool
+        settable: false

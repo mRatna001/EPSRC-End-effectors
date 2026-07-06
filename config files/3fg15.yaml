@@ -1,16 +1,36 @@
-name: 3fg15
-type: fingered
+id: 3fg15
+name: OnRobot 3FG15
 driver: fg15.FG15
-max_force_percent: 100
-unit_id: 65
-ip: 192.168.1.1
-port: 502
-commands:
-  - open_gripper
-  - close_gripper
-  - move_gripper
-  - flexible_grip
-  - stop
-  - get_status
-  - get_diameter
-  - get_diameter_with_offset
+nodes:
+  gripper:
+    properties:
+      diameter_external:
+        datatype: float
+        unit: mm
+        settable: true
+        min: 4
+        max: 152
+      diameter_internal:
+        datatype: float
+        unit: mm
+        settable: true
+        min: 35
+        max: 181
+      force:
+        datatype: float
+        unit: '%'
+        settable: true
+        min: 0
+        max: 100
+      busy:
+        datatype: bool
+        settable: false
+      grip_detected:
+        datatype: bool
+        settable: false
+      force_grip_detected:
+        datatype: bool
+        settable: false
+      calibration_ok:
+        datatype: bool
+        settable: false

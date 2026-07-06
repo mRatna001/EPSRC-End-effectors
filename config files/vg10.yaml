@@ -1,16 +1,27 @@
-name: vg10
-type: vacuum
+id: vg10
+name: OnRobot VG10
 driver: vg10.VG10
-max_vacuum_percent: 80
-channels:
-  - A
-  - B
-unit_id: 65
-ip: 192.168.1.1
-port: 502
-commands:
-  - grip
-  - release
-  - idle
-  - stop
-  - get_status
+nodes:
+  gripper:
+    properties:
+      vacuum_channel_a:
+        datatype: float
+        unit: '%'
+        settable: true
+        min: 0
+        max: 80
+      vacuum_channel_b:
+        datatype: float
+        unit: '%'
+        settable: true
+        min: 0
+        max: 80
+      actual_vacuum_a:
+        datatype: float
+        unit: relative vacuum
+        settable: false
+      actual_vacuum_b:
+        datatype: float
+        unit: relative vacuum
+        settable: false
+

@@ -1,0 +1,5 @@
+int32 vacuum_percent
+string channel
+---
+bool accepted
+string message
