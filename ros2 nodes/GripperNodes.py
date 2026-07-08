@@ -12,6 +12,7 @@ from std_msgs.msg import String
 from std_srvs.srv import Trigger
 
 
+
 def load_gripper_from_config(config_path: str, ip: str, port: int):
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
