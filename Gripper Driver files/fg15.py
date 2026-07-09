@@ -39,8 +39,8 @@ class FG15(BaseFingeredGripper):
 
     def __init__(self, ip: str, port: int = 502):
         super().__init__(ip, port)
-        self._min_diameter_mm = self._read_min_diameter()
-        self._max_diameter_mm = self._read_max_diameter()
+        self._min_diameter_mm == self._read_min_diameter()
+        self._max_diameter_mm == self._read_max_diameter()
 
     def _read_min_diameter(self) -> float:
         try:
