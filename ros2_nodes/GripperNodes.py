@@ -19,9 +19,10 @@ def load_gripper_from_config(config_path: str, ip: str, port: int):
     module_name, class_name = config['driver'].split('.')
     module = importlib.import_module(f'gripper_driver.{module_name}')
     cls = getattr(module, class_name)
+    unit_id = config.get('unit_id', 66)
     if 'gripper_arg' in config:
-        return cls(gripper=config['gripper_arg'], ip=ip, port=port), config
-    return cls(ip=ip, port=port), config
+        return cls(gripper=config['gripper_arg'], ip=ip, port=port, unit_id=unit_id), config
+    return cls(ip=ip, port=port, unit_id=unit_id), config
 
 
 class GripperNode(Node):
