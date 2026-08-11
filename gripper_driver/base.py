@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from pymodbus.client import ModbusTcpClient
 
-UNIT_ID = 66
+
 
 
 class BaseGripper(ABC):
 
-    def __init__(self, ip: str, port: int = 502):
+    def __init__(self, ip: str, port: int = 502, unit_id: int = 66):
+        self.unit_id = unit_id
         self.ip = ip
         self.port = port
         self.modbus = ModbusTcpClient(host=ip, port=port, timeout=1)
@@ -25,7 +26,7 @@ class BaseGripper(ABC):
         result = self.modbus.read_holding_registers(
             address=address,
             count=1,
-            device_id=UNIT_ID
+            device_id=self.unit_id
         )
         return result.registers[0]
 
@@ -34,7 +35,7 @@ class BaseGripper(ABC):
         self.modbus.write_register(
             address=address,
             value=value,
-            device_id=UNIT_ID
+            device_id=self.unit_id
         )
 
     def _write_registers(self, address: int, values: list):
@@ -42,7 +43,7 @@ class BaseGripper(ABC):
         self.modbus.write_registers(
             address=address,
             values=values,
-            device_id=UNIT_ID
+            device_id=self.unit_id
         )
 
     @abstractmethod
