@@ -1,6 +1,7 @@
 id: sg
 name: OnRobot SG
 driver: sg.SG
+unit_id: 65
 nodes:
   gripper:
     properties:
