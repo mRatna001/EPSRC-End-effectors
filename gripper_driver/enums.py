@@ -7,6 +7,7 @@ class GripperType(Enum):
     THREEFG15  = '3fg15'
     VG10        = 'vg10'
     VGC10       = 'vgc10'
+    MG10        = 'mg10'
     GECKO       = 'gecko'
     SOFT_GRIPPER= 'soft_gripper'
 
