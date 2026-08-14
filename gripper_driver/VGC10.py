@@ -1,4 +1,4 @@
-from base import BaseVacuumGripper
+from gripper_driver.base import BaseVacuumGripper
 
 # Write registers (send commands)
 REG_CHANNEL_A_WRITE = 0  
@@ -21,8 +21,8 @@ UNIT_ID = 65
 
 class VG10(BaseVacuumGripper):
 
-    def __init__(self, ip: str, port: int = 502):
-        super().__init__(ip, port)
+    def __init__(self, ip: str, port: int = 502, unit_id: int = 66):
+        super().__init__(ip, port, unit_id)
 
     def get_status(self) -> dict:
         raw_a = self._read_register(REG_CHANNEL_A_READ)

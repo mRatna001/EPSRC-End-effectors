@@ -1,4 +1,4 @@
-from base import BaseFingeredGripper
+from gripper_driver.base import BaseFingeredGripper
 
 REG_TARGET_WIDTH    = 0
 REG_TARGET_FORCE    = 1
@@ -25,8 +25,8 @@ MAX_SPEED = 100
 
 class TWOFG7(BaseFingeredGripper):
 
-    def __init__(self, ip: str, port: int = 502):
-        super().__init__(ip, port)
+    def __init__(self, ip: str, port: int = 502, unit_id: int = 66):
+        super().__init__(ip, port, unit_id)
         self.max_force = self._read_register(REG_MAX_FORCE)
         self.max_width = self._read_register(REG_MAX_EXT_WIDTH) / 10.0
         self.min_width = self._read_register(REG_MIN_EXT_WIDTH) / 10.0
