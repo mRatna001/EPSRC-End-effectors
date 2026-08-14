@@ -1,4 +1,4 @@
-from base import BaseFingeredGripper
+from gripper_driver.base import BaseFingeredGripper
 
 REG_TARGET_FORCE    = 0
 REG_TARGET_DIAMETER = 1
@@ -29,8 +29,8 @@ MIN_DIAMETER_MM     = 0
 
 class FG15(BaseFingeredGripper):
 
-    def __init__(self, ip: str, port: int = 502):
-        super().__init__(ip, port)
+    def __init__(self, ip: str, port: int = 502, unit_id: int = 66):
+        super().__init__(ip, port, unit_id)
         self._min_diameter_mm = self._read_min_diameter()
         self._max_diameter_mm = self._read_max_diameter()
 

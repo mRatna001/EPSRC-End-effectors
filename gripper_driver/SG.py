@@ -1,4 +1,4 @@
-from base import BaseFingeredGripper
+from gripper_driver.base import BaseFingeredGripper
 
 REG_TARGET_WIDTH    = 0
 REG_COMMAND         = 1
@@ -22,8 +22,8 @@ MODEL_B_HARD        = 4
 
 class SG(BaseFingeredGripper):
 
-    def __init__(self, ip: str, port: int = 502, model: int = MODEL_A_SOFT, gentle: bool = False):
-        super().__init__(ip, port)
+    def __init__(self, ip: str, port: int = 502, unit_id: int = 66, model: int = MODEL_A_SOFT, gentle: bool = False):
+        super().__init__(ip, port, unit_id)
         self.model = model
         self.gentle = gentle
         self._write_register(REG_GRIPPER_MODEL, self.model)

@@ -43,8 +43,8 @@ class MG10(BaseGripper):
         Dimensions:     Ø71 x 80.2 mm
     """
 
-    def __init__(self, ip: str, port: int = 502):
-        super().__init__(ip, port)
+    def __init__(self, ip: str, port: int = 502, unit_id: int = 66):
+        super().__init__(ip, port, unit_id)
 
     def get_status(self) -> dict:
         """
