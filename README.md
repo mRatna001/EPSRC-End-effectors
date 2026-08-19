@@ -160,29 +160,6 @@ Open `urdf_agent.jsx` in Claude.ai artifacts -- paste datasheet specs and it gen
 
 ---
 
-## Isaac Sim
-
-3FG15 imported with real CAD geometry and articulated joints. Fingers move via USD physics drive API.
-
-```bash
-cd ~/isaac-sim
-./isaac-sim.sh
-# Then File -> Open -> ~/3fg15_urdf/3fg15.urdf
-```
-
-Move fingers in Script Editor:
-```python
-import omni.usd
-from pxr import UsdPhysics
-
-stage = omni.usd.get_context().get_stage()
-for joint_name in ['finger_1_joint', 'finger_2_joint', 'finger_3_joint']:
-    prim = stage.GetPrimAtPath(f'/tn__3fg15_/Physics/{joint_name}')
-    drive = UsdPhysics.DriveAPI.Apply(prim, 'angular')
-    drive.GetStiffnessAttr().Set(10000.0)
-    drive.GetDampingAttr().Set(1000.0)
-    drive.GetTargetPositionAttr().Set(20.0)
-```
 
 ---
 
