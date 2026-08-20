@@ -1,128 +1,135 @@
 # EPSRC-End-effectors
 
-A hardware-agnostic ROS2 framework for controlling OnRobot robotic end-effectors over Modbus TCP.
+A hardware-agnostic Python driver package for OnRobot robotic end-effectors over Modbus TCP.
 
 **EPSRC Summer Internship 2026 · National Robotarium, Heriot-Watt University**  
-Maira Ratna | Supervised by Rahul Ramachandran & Romain Michalec
+Maira Ratnarajah | Supervised by Rahul Ramachandran & Romain Michalec
 
 ---
 
-## What This Does
+## Overview
 
-Plug in any OnRobot gripper, point the ROS2 node at its config file, and it works. No code changes needed when swapping grippers. The framework abstracts 9 gripper models behind a unified Python driver hierarchy, with a self-describing YAML config layer and a generic ROS2 node.
+Each OnRobot gripper communicates over Modbus TCP using a different register map. This package provides a unified Python driver hierarchy so any gripper can be commanded with the same interface -- `open_gripper()`, `close_gripper()`, `get_status()`, `stop()` -- without the calling code knowing which gripper is attached.
 
 ---
 
 ## Supported Grippers
 
-| Gripper | Type | Status | Device ID |
-|---------|------|--------|-----------|
-| 3FG15   | Three-finger | Hardware validated ✓ | 66 |
-| RG2     | Parallel-jaw | Driver complete | 65/66 |
-| RG6     | Parallel-jaw | Driver complete | 65/66 |
-| 2FG7    | Parallel-jaw | Driver complete | 65/66 |
-| VG10    | Vacuum | Driver complete | 65/66 |
-| VGC10   | Vacuum | Driver complete | 65/66 |
-| SG      | Soft gripper | Hardware validated ✓ | 65 |
-| MG10    | Magnetic | Hardware validated ✓ | 65 |
-| RG2-FT  | Force/torque | Driver complete, not detected on lab compute box | - |
+| Gripper | Type | Driver | Hardware Status | Device ID |
+|---------|------|--------|----------------|-----------|
+| 3FG15   | Three-finger | `fg15.FG15` | Validated ✓ | 66 |
+| RG2     | Parallel-jaw | `rg2_rg6.RG` (gripper='rg2') | Driver complete | 65/66 |
+| RG6     | Parallel-jaw | `rg2_rg6.RG` (gripper='rg6') | Driver complete | 65/66 |
+| 2FG7    | Parallel-jaw | `TWOFG7.TWOFG7` | Driver complete | 65/66 |
+| VG10    | Vacuum | `vg10.VG10` | Driver complete | 65/66 |
+| VGC10   | Vacuum | `VGC10.VG10` | Driver complete | 65/66 |
+| SG      | Soft gripper | `SG.SG` | Validated ✓ | 65 |
+| MG10    | Magnetic | `mg10.MG10` | Validated ✓ | 65 |
+| RG2-FT  | Force/torque | `rg2_ft.RG2FT` | Not detected on lab compute box | - |
 
 ---
 
 ## Installation
 
 ```bash
-# Clone the repo
 git clone https://github.com/mRatna001/EPSRC-End-effectors.git
 cd EPSRC-End-effectors
-
-# Install dependencies
 pip install pymodbus --break-system-packages
-pip install anthropic --break-system-packages  # for LLM tooling only
-
-# Source ROS2
-source /opt/ros/jazzy/setup.bash
 ```
 
 ---
 
-## Quick Start
+## Driver Package
 
-### Test all connected grippers
-```bash
-python3 test_all_grippers.py
+The driver hierarchy is in `gripper_driver/`:
+
+```
+BaseGripper (ABC)
+├── BaseFingeredGripper  →  FG15, RG, TWOFG7, SG, RG2FT
+└── BaseVacuumGripper    →  VG10, VGC10
+MG10                     →  inherits BaseGripper directly
 ```
 
-### Run a specific gripper
+`BaseGripper` manages the Modbus TCP connection and provides three low-level methods all drivers use:
+- `_read_register(address)` -- read one 16-bit holding register
+- `_write_register(address, value)` -- write one register (Modbus FC6)
+- `_write_registers(address, values)` -- write multiple consecutive registers atomically (Modbus FC16)
+
+Each driver implements the gripper-specific register map on top of these.
+
+### Using a driver directly
+
 ```python
 from gripper_driver.fg15 import FG15
 
 g = FG15('192.168.1.1', unit_id=66)
 print(g.get_status())
 g.open_gripper()
+g.move_gripper(diameter_mm=45.0, force_percent=30.0)
 g.close_gripper()
+g.stop()
 ```
 
-### Launch the ROS2 node
-```bash
-source /opt/ros/jazzy/setup.bash
-python3 ros2_nodes/GripperNodes.py --ros-args \
-  -p config_file:=config/3fg15.yaml \
-  -p ip_address:=192.168.1.1
+```python
+from gripper_driver.mg10 import MG10
+
+g = MG10('192.168.1.1', unit_id=65)
+print(g.get_status())
+g.grip(strength=80)
+g.release()
 ```
 
-The node publishes gripper status to `/status` at 20Hz and exposes `/open`, `/close`, `/stop` services.
+```python
+from gripper_driver.VGC10 import VG10
+
+g = VG10('192.168.1.1', unit_id=65)
+g.grip(vacuum_percent=80, channel='both')
+g.release()
+```
 
 ---
 
-## Architecture
+## Auto-Detection
+
+`detect_gripper.py` scans Modbus device IDs 64-69 and identifies the connected gripper from its firmware signature in register 260.
 
 ```
-EPSRC-End-effectors/
-├── gripper_driver/
-│   ├── base.py          # BaseGripper, BaseFingeredGripper, BaseVacuumGripper
-│   ├── fg15.py          # OnRobot 3FG15
-│   ├── rg2_rg6.py       # OnRobot RG2 / RG6
-│   ├── TWOFG7.py        # OnRobot 2FG7
-│   ├── vg10.py          # OnRobot VG10 / VGC10
-│   ├── VGC10.py         # OnRobot VGC10
-│   ├── SG.py            # OnRobot Soft Gripper
-│   ├── mg10.py          # OnRobot MG10
-│   └── rg2_ft.py        # OnRobot RG2-FT
-├── config/
-│   ├── 3fg15.yaml
-│   ├── rg2.yaml
-│   ├── rg6.yaml
-│   ├── 2fg7.yaml
-│   ├── vg10.yaml
-│   ├── vgc10.yaml
-│   ├── sg.yaml
-│   └── mg10.yaml
-├── ros2_nodes/
-│   └── GripperNodes.py  # Generic ROS2 node
-├── urdf/                # URDF files for Isaac Sim
-├── test_all_grippers.py # Demo/test script
-├── generate_driver.py   # LLM agent: datasheet -> driver
-└── TROUBLESHOOTING.md
+Gripper  | reg260 range  | Notes
+---------|---------------|-------
+MG10     | 65000-65535   | Magnetic gripper
+VGC10    | 80-100        | Vacuum gripper
+SG       | 1-5           | Soft gripper, needs 3s init delay
+RG2/RG6  | 5-10          | Parallel jaw
+3FG15    | 0             | Three-finger, reg257 = current diameter
 ```
 
-### Driver Hierarchy
+### Run standalone
 
-```
-BaseGripper (ABC)
-├── BaseFingeredGripper
-│   ├── FG15       (3FG15)
-│   ├── RG         (RG2, RG6)
-│   ├── TWOFG7     (2FG7)
-│   ├── SG         (Soft Gripper)
-│   └── RG2FT      (RG2-FT)
-└── BaseVacuumGripper
-    ├── VG10
-    └── VGC10      (inherits VG10)
-MG10               (inherits BaseGripper directly)
+```bash
+PYTHONPATH=/path/to/EPSRC-End-effectors python3 detect_gripper.py
 ```
 
-### Config Format (Homie-inspired)
+### Import in a script
+
+```python
+from detect_gripper import auto_connect
+
+g, gripper_type = auto_connect()
+print(g.get_status())
+g.open_gripper()
+```
+
+For RG2 specifically (defaults to RG6):
+
+```bash
+RG_MODEL=rg2 python3 detect_gripper.py
+```
+
+---
+
+## Config Files
+
+Each gripper has a YAML config in `config/` describing its properties, units, and limits. These are used by the ROS2 node to adapt at runtime without code changes.
 
 ```yaml
 id: fg15
@@ -140,55 +147,27 @@ nodes:
         max: 150
 ```
 
-The ROS2 node reads this at startup and adapts automatically -- no code changes needed when switching grippers.
-
 ---
 
-## LLM Tooling
+## Device IDs
 
-### Generate a driver from a register map
-```bash
-python3 generate_driver.py
-```
-Paste a gripper's Modbus register map and it writes the `.py` driver and `.yaml` config automatically using Claude.
+The OnRobot compute box assigns Modbus device IDs based on which physical port the gripper is plugged into. Common values:
 
-### Grasp planning agent
-Open `gripper_agent.jsx` in Claude.ai artifacts -- describe the task in plain English and it outputs the Python commands to run.
+- **66** -- primary side (most fingered grippers when using Dual Quick Changer)
+- **65** -- secondary side / single port (SG, MG10, RG6 when plugged into port 2)
 
-### URDF generator
-Open `urdf_agent.jsx` in Claude.ai artifacts -- paste datasheet specs and it generates a complete URDF.
-
----
-
-
----
-
-## Benchmarking Results
-
-| Gripper | Cmd Latency (mean) | Cmd Latency (SD) | Motion Time (mean) | Motion Time (SD) |
-|---------|-------------------|-----------------|-------------------|-----------------|
-| MG10    | 14.3ms | 1.5ms | 395ms  | 5ms    |
-| RG6     | 7.9ms  | 0.9ms | 7230ms | 1141ms |
-| SG      | 21.0ms | 1.7ms | 1232ms | 10ms   |
-| 3FG15   | TBC    | TBC   | TBC    | TBC    |
-| RG2     | TBC    | TBC   | TBC    | TBC    |
-
-All measurements: n=20 trials, Modbus TCP over Ethernet at 192.168.1.1:502.
+If unsure, run `detect_gripper.py` -- it scans and identifies automatically.
 
 ---
 
 ## Known Issues
 
-- **RG2-FT**: Not detected on lab compute box. Driver complete, hardware blocked.
-- **Onshape URDF**: Mates required in Onshape assembly for full articulation export.
-- **ros2_control**: Current node uses plain rclpy services. ros2_control hardware interface plugin rewrite is future work.
+- **RG2-FT**: Not detected on lab compute box. Driver complete, hardware blocked -- likely a firmware issue.
+- **RG2 vs RG6**: Both use the same firmware signature in reg260. Auto-detection defaults to RG6. Set `RG_MODEL=rg2` to override.
 
 ---
 
 ## References
 
 - Torielli et al. (2023). ROS End-Effector: A Hardware-Agnostic Framework. JIRS 108, 70.
-- OnRobot A/S (2024). Modbus TCP Register Maps.
-- NVIDIA (2024). Isaac Sim 6.0 Documentation.
-- Santello et al. (1998). Postural hand synergies. Journal of Neuroscience.
-- DeliGrasp (2024). LLM-informed adaptive grasping. IEEE ICRA.
+- OnRobot A/S (2024). Modbus TCP Register Maps. Product documentation.
